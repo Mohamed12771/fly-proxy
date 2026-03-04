@@ -1,0 +1,51 @@
+# ╔══════════════════════════════════════════╗
+# ║  fly.toml — إعدادات Fly.io              ║
+# ╚══════════════════════════════════════════╝
+
+app = "vless-proxy-dz"        # ← غيّر هذا الاسم لأي اسم تريده
+primary_region = "cdg"        # باريس — الأقرب للجزائر ✅
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  PORT = "8080"
+
+[http_service]
+  internal_port       = 8080
+  force_https         = false   # مهم: نترك HTTP لأن VLESS على بورت 80
+  auto_stop_machines  = false   # لا يتوقف تلقائياً
+  auto_start_machines = true
+  min_machines_running = 1      # دائماً مشغّل
+
+  [http_service.concurrency]
+    type       = "connections"
+    hard_limit = 500
+    soft_limit = 400
+
+[[services]]
+  protocol   = "tcp"
+  internal_port = 8080
+
+  [[services.ports]]
+    port     = 80
+    handlers = ["http"]
+
+  [[services.ports]]
+    port     = 443
+    handlers = ["tls", "http"]
+
+  [services.concurrency]
+    type       = "connections"
+    hard_limit = 500
+    soft_limit = 400
+
+  [[services.tcp_checks]]
+    interval      = "15s"
+    timeout       = "10s"
+    grace_period  = "30s"
+
+[[vm]]
+  memory = "256mb"
+  cpu_kind = "shared"
+  cpus = 1
