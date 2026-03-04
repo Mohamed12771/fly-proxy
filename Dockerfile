@@ -1,10 +1,11 @@
-FROM alpine:latest
+FROM python:3.11-slim
 
-RUN apk add --no-cache curl unzip
-RUN curl -L https://github.com/XTLS/Xray-core/releases/latest/download/Xray-linux-64.zip -o xray.zip \
-    && unzip xray.zip \
-    && chmod +x xray
+WORKDIR /app
 
-COPY config.json /config.json
+RUN pip install --no-cache-dir websockets==12.0
 
-CMD ["./xray", "-config", "/config.json"]
+COPY main.py .
+
+EXPOSE 8080
+
+CMD ["python", "-u", "main.py"]
